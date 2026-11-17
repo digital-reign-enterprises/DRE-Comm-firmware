@@ -1,8 +1,9 @@
 name: DRE-Comm Firmware
 
-# Builds DRE-Comm firmware on every push to develop and on manual runs.
-# Push a tag like dre-v2.7.0 to also publish the .bin files as a GitHub Release
+# Builds DRE-Comm firmware on pull requests, every push to develop and manual runs.
+# Push a tag like dre-v2.8.3 to also publish the files as a GitHub Release
 # (that release is what the DRE-Comm web flasher will download from).
+# Uses the same build action as Meshtastic's own CI.
 on:
   push:
     branches: [develop]
@@ -20,30 +21,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board:
-          - dre-comm-heltec-v3
+        include:
+          - board: dre-comm-heltec-v3
+            platform: esp32s3
     steps:
       - uses: actions/checkout@v7
         with:
           submodules: recursive
 
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.14"
-
-      - name: Install build tools (same pinned versions as Meshtastic CI)
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r .github/actions/setup-base/requirements.txt
-
-      - name: Cache PlatformIO downloads
-        uses: actions/cache@v6
-        with:
-          path: ~/.platformio/.cache
-          key: pio-dre-${{ matrix.board }}-${{ hashFiles('**.ini') }}
-
       - name: Build ${{ matrix.board }}
-        run: ./bin/build-esp32.sh ${{ matrix.board }}
+        uses: meshtastic/gh-action-firmware@main
+        with:
+          pio_platform: ${{ matrix.platform }}
+          pio_env: ${{ matrix.board }}
+          pio_target: build
+
+      - name: Add Meshtastic unified OTA image
+        working-directory: release
+        env:
+          PIO_PLATFORM: ${{ matrix.platform }}
+        run: |
+          curl -fL -o "mt-$PIO_PLATFORM-ota.bin" \
+            "https://github.com/meshtastic/esp32-unified-ota/releases/latest/download/mt-$PIO_PLATFORM-ota.bin"
 
       - name: Upload firmware
         uses: actions/upload-artifact@v7
