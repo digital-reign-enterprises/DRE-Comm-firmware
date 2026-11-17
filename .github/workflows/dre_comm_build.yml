@@ -1,14 +1,14 @@
 name: DRE-Comm Firmware
 
-# Builds DRE-Comm firmware on every push to master and on manual runs.
+# Builds DRE-Comm firmware on every push to develop and on manual runs.
 # Push a tag like dre-v2.7.0 to also publish the .bin files as a GitHub Release
 # (that release is what the DRE-Comm web flasher will download from).
 on:
   push:
-    branches: [master]
+    branches: [develop]
     tags: ["dre-v*"]
   pull_request:
-    branches: [master]
+    branches: [develop]
   workflow_dispatch:
 
 permissions:
