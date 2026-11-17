@@ -7,7 +7,7 @@ name: DRE-Comm Firmware
 on:
   push:
     branches: [develop]
-    tags: ["dre-v*"]
+    tags: [dre-v*]
   pull_request:
     branches: [develop]
   workflow_dispatch:
