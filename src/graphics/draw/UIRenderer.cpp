@@ -2032,14 +2032,19 @@ void UIRenderer::drawCompassAndLocationScreen(OLEDDisplay *display, OLEDDisplayU
 void UIRenderer::drawOEMIconScreen(const char *upperMsg, OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
 {
     static const uint8_t xbm[] = USERPREFS_OEM_IMAGE_DATA;
+#ifdef USERPREFS_OEM_SUBTEXT
+    const int subtextH = FONT_HEIGHT_SMALL; // reserve the bottom line for the subtext
+#else
+    const int subtextH = 0;
+#endif
     if (currentResolution == ScreenResolution::High) {
         display->drawXbm(x + (SCREEN_WIDTH - USERPREFS_OEM_IMAGE_WIDTH) / 2,
-                         y + (SCREEN_HEIGHT - FONT_HEIGHT_MEDIUM - USERPREFS_OEM_IMAGE_HEIGHT) / 2 + 2, USERPREFS_OEM_IMAGE_WIDTH,
-                         USERPREFS_OEM_IMAGE_HEIGHT, xbm);
+                         y + (SCREEN_HEIGHT - FONT_HEIGHT_MEDIUM - subtextH - USERPREFS_OEM_IMAGE_HEIGHT) / 2 + 2,
+                         USERPREFS_OEM_IMAGE_WIDTH, USERPREFS_OEM_IMAGE_HEIGHT, xbm);
     } else {
 
         display->drawXbm(x + (SCREEN_WIDTH - USERPREFS_OEM_IMAGE_WIDTH) / 2,
-                         y + (SCREEN_HEIGHT - USERPREFS_OEM_IMAGE_HEIGHT) / 2 + 2, USERPREFS_OEM_IMAGE_WIDTH,
+                         y + (SCREEN_HEIGHT - subtextH - USERPREFS_OEM_IMAGE_HEIGHT) / 2 + 2, USERPREFS_OEM_IMAGE_WIDTH,
                          USERPREFS_OEM_IMAGE_HEIGHT, xbm);
     }
 
@@ -2058,9 +2063,14 @@ void UIRenderer::drawOEMIconScreen(const char *upperMsg, OLEDDisplay *display, O
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     const char *title = USERPREFS_OEM_TEXT;
     if (currentResolution == ScreenResolution::High) {
-        display->drawString(x + getStringCenteredX(title), y + SCREEN_HEIGHT - FONT_HEIGHT_MEDIUM, title);
+        display->drawString(x + getStringCenteredX(title), y + SCREEN_HEIGHT - FONT_HEIGHT_MEDIUM - subtextH, title);
     }
     display->setFont(FONT_SMALL);
+#ifdef USERPREFS_OEM_SUBTEXT
+    // Optional attribution line (e.g. "powered by Meshtastic") at the bottom, shown at every resolution
+    const char *subtext = USERPREFS_OEM_SUBTEXT;
+    display->drawString(x + getStringCenteredX(subtext), y + SCREEN_HEIGHT - FONT_HEIGHT_SMALL, subtext);
+#endif
 
     // Draw region in upper left
     if (upperMsg)

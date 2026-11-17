@@ -1,0 +1,57 @@
+name: DRE-Comm Firmware
+
+# Builds DRE-Comm firmware on every push to master and on manual runs.
+# Push a tag like dre-v2.7.0 to also publish the .bin files as a GitHub Release
+# (that release is what the DRE-Comm web flasher will download from).
+on:
+  push:
+    branches: [master]
+    tags: ["dre-v*"]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+          - dre-comm-heltec-v3
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Install PlatformIO
+        run: pip install -U platformio
+
+      - name: Cache PlatformIO downloads
+        uses: actions/cache@v6
+        with:
+          path: ~/.platformio/.cache
+          key: pio-dre-${{ matrix.board }}-${{ hashFiles('**.ini') }}
+
+      - name: Build ${{ matrix.board }}
+        run: ./bin/build-esp32.sh ${{ matrix.board }}
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.board }}
+          path: release/*
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/dre-v')
+        uses: softprops/action-gh-release@v3
+        with:
+          name: DRE-Comm ${{ github.ref_name }}
+          files: release/*
