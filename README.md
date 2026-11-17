@@ -1,3 +1,15 @@
+# DRE-Comm Firmware
+
+DRE-Comm is Digital Reign Enterprises' build of [Meshtastic®](https://meshtastic.org) firmware for DRE-Comm radios.
+It stays mesh-compatible with stock Meshtastic nodes. Source is provided under the GPLv3, the same license as upstream.
+
+- Build DRE-Comm for Heltec V3 hardware: `pio run -e dre-comm-heltec-v3`
+- Change the boot logo: `python branding/dre-comm/make_logo.py --image your_logo.png`
+
+Meshtastic® is a registered trademark of Meshtastic LLC. DRE-Comm is not affiliated with or endorsed by Meshtastic LLC.
+
+---
+
 <div align="center" markdown="1">
 
 <img src=".github/meshtastic_logo.png" alt="Meshtastic Logo" width="80"/>
