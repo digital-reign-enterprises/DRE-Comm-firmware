@@ -5,7 +5,7 @@ Usage:
   python branding/dre-comm/make_logo.py                     # built-in antenna + DRE-Comm wordmark
   python branding/dre-comm/make_logo.py --image logo.png    # convert your own logo (black/white works best)
 
-Writes variants/esp32s3/dre_comm_heltec_v3/dre_comm_logo.h and a 128x64 preview PNG.
+Writes branding/dre-comm/dre_comm_logo.h (shared by every DRE-Comm board) and a 128x64 preview PNG.
 """
 
 import argparse
@@ -17,9 +17,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 W, H = 96, 40  # fits under the top status row on a 128x64 OLED
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-OUT_H = os.path.join(
-    ROOT, "variants", "esp32s3", "dre_comm_heltec_v3", "dre_comm_logo.h"
-)
+OUT_H = os.path.join(ROOT, "branding", "dre-comm", "dre_comm_logo.h")
 OUT_PNG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "boot_preview.png")
 BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
