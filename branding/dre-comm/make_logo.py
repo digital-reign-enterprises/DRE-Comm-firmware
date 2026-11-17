@@ -2,7 +2,7 @@
 """Generate the DRE-Comm boot logo as an XBM byte array for the firmware OEM boot screen.
 
 Usage:
-  python branding/dre-comm/make_logo.py                     # built-in DRE-COMM wordmark
+  python branding/dre-comm/make_logo.py                     # built-in antenna + DRE-Comm wordmark
   python branding/dre-comm/make_logo.py --image logo.png    # convert your own logo (black/white works best)
 
 Writes variants/esp32s3/dre_comm_heltec_v3/dre_comm_logo.h and a 128x64 preview PNG.
@@ -12,7 +12,7 @@ import os
 
 from PIL import Image, ImageDraw, ImageFont
 
-W, H = 76, 32  # fits between the top status row and the "powered by" line on a 128x64 OLED
+W, H = 96, 40  # fits under the top status row on a 128x64 OLED
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT_H = os.path.join(ROOT, "variants", "esp32s3", "dre_comm_heltec_v3", "dre_comm_logo.h")
 OUT_PNG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "boot_preview.png")
@@ -29,19 +29,20 @@ def font(size):
 def wordmark():
     img = Image.new("1", (W, H), 0)
     d = ImageDraw.Draw(img)
-    big = font(21)
-    small = font(9)
-    # "DRE" centered on top
-    bw = d.textlength("DRE", font=big)
-    d.text(((W - bw) / 2, -3), "DRE", font=big, fill=1)
-    # radio-wave arcs either side of DRE
-    for r in (4, 7):
-        d.arc((8 - r, 10 - r, 8 + r, 10 + r), 120, 240, fill=1)
-        d.arc((W - 9 - r, 10 - r, W - 9 + r, 10 + r), -60, 60, fill=1)
-    # rule + "COMM" underneath
-    d.line((4, 21, W - 5, 21), fill=1)
-    sw = d.textlength("C O M M", font=small)
-    d.text(((W - sw) / 2, 22), "C O M M", font=small, fill=1)
+    cx = W // 2
+    # antenna: mast, tip and radio waves either side
+    d.line((cx, 5, cx, 21), fill=1)
+    d.line((cx - 5, 21, cx + 5, 21), fill=1)
+    d.line((cx, 9, cx - 4, 21), fill=1)
+    d.line((cx, 9, cx + 4, 21), fill=1)
+    d.ellipse((cx - 2, 2, cx + 2, 6), fill=1)
+    for r in (6, 10, 14):
+        d.arc((cx - r, 4 - r, cx + r, 4 + r), 140, 220, fill=1)
+        d.arc((cx - r, 4 - r, cx + r, 4 + r), -40, 40, fill=1)
+    # "DRE-Comm" wordmark underneath
+    f = font(15)
+    tw = d.textlength("DRE-Comm", font=f)
+    d.text(((W - tw) / 2, 20), "DRE-Comm", font=f, fill=1)
     return img
 
 
@@ -74,9 +75,7 @@ def preview(img):
     d.text((0, 0), "US", font=f, fill=1)
     d.text((128 - d.textlength("2.7.x", font=f), 0), "2.7.x", font=f, fill=1)
     d.text((128 - d.textlength("DRE1", font=f), 11), "DRE1", font=f, fill=1)
-    scr.paste(img, ((128 - W) // 2, (64 - 13 - H) // 2 + 2))
-    sub = "powered by Meshtastic"
-    d.text(((128 - d.textlength(sub, font=f)) / 2, 64 - 11), sub, font=f, fill=1)
+    scr.paste(1, ((128 - W) // 2, (64 - H) // 2 + 2), img)
     scr.convert("L").resize((512, 256), Image.NEAREST).save(OUT_PNG)
 
 
