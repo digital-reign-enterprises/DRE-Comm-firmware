@@ -5,7 +5,7 @@ It stays mesh-compatible with stock Meshtastic nodes. Source is provided under t
 
 - DRE-Comm builds (one per supported board):
   `dre-comm-heltec-v3`, `dre-comm-heltec-wireless-tracker` (V1.1), `dre-comm-heltec-wireless-tracker-v2`,
-  `dre-comm-heltec-wsl-v3` (Wireless Stick Lite V3), `dre-comm-t-deck` (classic screens), `dre-comm-t-deck-tft` (touchscreen UI)
+  `dre-comm-heltec-wsl-v3` (Wireless Stick Lite V3), `dre-comm-heltec-wireless-stick-v3` (Wireless Stick V3/V3.1 with OLED), `dre-comm-t-deck` (classic screens), `dre-comm-t-deck-tft` (touchscreen UI)
 - Build one: `pio run -e dre-comm-heltec-v3`
 - Change the boot logo: `python branding/dre-comm/make_logo.py --image your_logo.png`
 

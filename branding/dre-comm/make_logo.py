@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""Generate the DRE-Comm boot logo as an XBM byte array for the firmware OEM boot screen.
+"""Generate the DRE-Comm boot logos as XBM byte arrays for the firmware OEM boot screen.
 
 Usage:
   python branding/dre-comm/make_logo.py                     # built-in antenna + DRE-Comm wordmark
   python branding/dre-comm/make_logo.py --image logo.png    # convert your own logo (black/white works best)
 
-Writes branding/dre-comm/dre_comm_logo.h (shared by every DRE-Comm board) and a 128x64 preview PNG.
+Writes branding/dre-comm/dre_comm_logo.h (shared by every DRE-Comm board) with two sizes:
+  - 96x40 for normal screens (128x64 OLEDs and larger TFTs)
+  - 64x32 full-screen for tiny OLED_TINY panels (e.g. Heltec Wireless Stick V3)
+plus preview PNGs of both.
 """
 
 import argparse
@@ -16,9 +19,12 @@ import subprocess
 from PIL import Image, ImageDraw, ImageFont
 
 W, H = 96, 40  # fits under the top status row on a 128x64 OLED
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-OUT_H = os.path.join(ROOT, "branding", "dre-comm", "dre_comm_logo.h")
-OUT_PNG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "boot_preview.png")
+TW, TH = 64, 32  # fills a 64x32 tiny OLED
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(HERE))
+OUT_H = os.path.join(HERE, "dre_comm_logo.h")
+OUT_PNG = os.path.join(HERE, "boot_preview.png")
+OUT_TINY_PNG = os.path.join(HERE, "boot_preview_tiny.png")
 BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
 
@@ -29,63 +35,91 @@ def font(size):
         return ImageFont.load_default()
 
 
+def antenna(d, cx, top, mast, radii):
+    # mast, tip and radio waves either side
+    d.line((cx, top + 3, cx, top + mast), fill=1)
+    d.line((cx - 4, top + mast, cx + 4, top + mast), fill=1)
+    d.line((cx, top + 6, cx - 3, top + mast), fill=1)
+    d.line((cx, top + 6, cx + 3, top + mast), fill=1)
+    d.ellipse((cx - 2, top, cx + 2, top + 4), fill=1)
+    for r in radii:
+        d.arc((cx - r, top + 2 - r, cx + r, top + 2 + r), 140, 220, fill=1)
+        d.arc((cx - r, top + 2 - r, cx + r, top + 2 + r), -40, 40, fill=1)
+
+
 def wordmark():
     img = Image.new("1", (W, H), 0)
     d = ImageDraw.Draw(img)
-    cx = W // 2
-    # antenna: mast, tip and radio waves either side
-    d.line((cx, 5, cx, 21), fill=1)
-    d.line((cx - 5, 21, cx + 5, 21), fill=1)
-    d.line((cx, 9, cx - 4, 21), fill=1)
-    d.line((cx, 9, cx + 4, 21), fill=1)
-    d.ellipse((cx - 2, 2, cx + 2, 6), fill=1)
-    for r in (6, 10, 14):
-        d.arc((cx - r, 4 - r, cx + r, 4 + r), 140, 220, fill=1)
-        d.arc((cx - r, 4 - r, cx + r, 4 + r), -40, 40, fill=1)
-    # "DRE-Comm" wordmark underneath
+    antenna(d, W // 2, 2, 19, (6, 10, 14))
     f = font(15)
     tw = d.textlength("DRE-Comm", font=f)
     d.text(((W - tw) / 2, 20), "DRE-Comm", font=f, fill=1)
     return img
 
 
-def from_image(path):
+def tiny_wordmark():
+    img = Image.new("1", (TW, TH), 0)
+    d = ImageDraw.Draw(img)
+    antenna(d, TW // 2, 0, 13, (5, 9))
+    f = font(10)
+    tw = d.textlength("DRE-Comm", font=f)
+    d.text(((TW - tw) / 2, 18), "DRE-Comm", font=f, fill=1)
+    return img
+
+
+def from_image(path, w, h):
     src = Image.open(path).convert("L")
-    src.thumbnail((W, H))
-    img = Image.new("1", (W, H), 0)
+    src.thumbnail((w, h))
+    img = Image.new("1", (w, h), 0)
     mono = src.point(lambda p: 255 if p > 127 else 0).convert("1")
-    img.paste(mono, ((W - mono.width) // 2, (H - mono.height) // 2))
+    img.paste(mono, ((w - mono.width) // 2, (h - mono.height) // 2))
     return img
 
 
 def to_xbm_bytes(img):
+    w, h = img.size
     out = []
-    for y in range(H):
-        for xb in range(0, W, 8):
+    for y in range(h):
+        for xb in range(0, w, 8):
             b = 0
             for bit in range(8):
                 x = xb + bit
-                if x < W and img.getpixel((x, y)):
+                if x < w and img.getpixel((x, y)):
                     b |= 1 << bit  # XBM is LSB-first
             out.append(b)
     return out
 
 
-def preview(img):
+def defines(img):
+    w, h = img.size
+    body = ", ".join(f"0x{b:02X}" for b in to_xbm_bytes(img))
+    return (
+        f"#define USERPREFS_OEM_IMAGE_WIDTH {w}\n"
+        f"#define USERPREFS_OEM_IMAGE_HEIGHT {h}\n"
+        f"#define USERPREFS_OEM_IMAGE_DATA {{ {body} }}\n"
+    )
+
+
+def save_png(scr, path):
+    scr.convert("L").resize((scr.width * 4, scr.height * 4), Image.NEAREST).save(path)
+    try:  # trunk check wants optimized PNGs (pip install pyoxipng)
+        import oxipng
+
+        oxipng.optimize(path, level=4)
+    except ImportError:
+        pass
+
+
+def preview(img, tiny):
     scr = Image.new("1", (128, 64), 0)
     d = ImageDraw.Draw(scr)
     f = font(9)
     d.text((0, 0), "US", font=f, fill=1)
-    d.text((128 - d.textlength("2.7.x", font=f), 0), "2.7.x", font=f, fill=1)
+    d.text((128 - d.textlength("2.8.x", font=f), 0), "2.8.x", font=f, fill=1)
     d.text((128 - d.textlength("DRE1", font=f), 11), "DRE1", font=f, fill=1)
     scr.paste(1, ((128 - W) // 2, (64 - H) // 2 + 2), img)
-    scr.convert("L").resize((512, 256), Image.NEAREST).save(OUT_PNG)
-    try:  # trunk check wants optimized PNGs (pip install pyoxipng)
-        import oxipng
-
-        oxipng.optimize(OUT_PNG, level=4)
-    except ImportError:
-        pass
+    save_png(scr, OUT_PNG)
+    save_png(tiny, OUT_TINY_PNG)
 
 
 def main():
@@ -95,23 +129,23 @@ def main():
         help="optional logo image to convert instead of the built-in wordmark",
     )
     a = ap.parse_args()
-    img = from_image(a.image) if a.image else wordmark()
-    data = to_xbm_bytes(img)
-    body = ", ".join(f"0x{b:02X}" for b in data)
+    img = from_image(a.image, W, H) if a.image else wordmark()
+    tiny = from_image(a.image, TW, TH) if a.image else tiny_wordmark()
     with open(OUT_H, "w") as fh:
         fh.write(
             "// Generated by branding/dre-comm/make_logo.py - do not edit by hand\n#pragma once\n"
         )
-        fh.write(
-            f"#define USERPREFS_OEM_IMAGE_WIDTH {W}\n#define USERPREFS_OEM_IMAGE_HEIGHT {H}\n"
-        )
-        fh.write(f"#define USERPREFS_OEM_IMAGE_DATA {{ {body} }}\n")
+        fh.write("#if defined(OLED_TINY)\n")
+        fh.write(defines(tiny))
+        fh.write("#else\n")
+        fh.write(defines(img))
+        fh.write("#endif\n")
     clang = shutil.which("clang-format")
     if clang:  # match the repo's formatting so trunk check stays green
         style = os.path.join(ROOT, ".trunk", "configs", ".clang-format")
         subprocess.run([clang, f"--style=file:{style}", "-i", OUT_H], check=False)
-    preview(img)
-    print("wrote", OUT_H, "and", OUT_PNG)
+    preview(img, tiny)
+    print("wrote", OUT_H, OUT_PNG, OUT_TINY_PNG)
 
 
 if __name__ == "__main__":

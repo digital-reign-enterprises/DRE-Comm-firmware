@@ -30,6 +30,8 @@ jobs:
             platform: esp32s3
           - board: dre-comm-heltec-wsl-v3
             platform: esp32s3
+          - board: dre-comm-heltec-wireless-stick-v3
+            platform: esp32s3
           - board: dre-comm-t-deck
             platform: esp32s3
           - board: dre-comm-t-deck-tft
