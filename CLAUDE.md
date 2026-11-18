@@ -10,7 +10,7 @@ Digital Reign Enterprises' fork of Meshtastic firmware. Upstream's own agent not
   earlier work on the 2.8 **alpha** (abandoned: alpha nodes couldn't talk to LongFast). Kept until the owner
   decides to delete them.
 - Local clone: `C:\Users\Gamer\Desktop\DRE\DRE-Comm\DRE-Comm-firmware`. Remotes: `origin` (DRE), `upstream` (Meshtastic).
-- Broker side: `C:\Users\Gamer\Desktop\DRE\dre-mqtt` (Mosquitto config, not yet on GitHub or deployed).
+- Broker side: `C:\Users\Gamer\Desktop\DRE\dre-mqtt` GitHub `digital-reign-enterprises/dre-mqtt` (private; not deployed).
 - Plan: `ROADMAP.md`. Upstream sync steps: `dre/SYNC.md`.
 
 ## Stack (from the repo, 2026-11-17)
@@ -58,3 +58,5 @@ Build those in Linux/CI or in Docker. Tested 2026-11-17: all three of v3, v4, ws
   WSL V3 now gets the defaults, ROADMAP.md, dre/SYNC.md, this file. Branch `dre-mqtt-defaults` (local only,
   not pushed). Heltec V3 built OK on Windows; V3, V4 and WSL V3 built OK in a Linux container, each binary
   contains the DRE hostname, root and username.
+- 2026-11-18: Pushed branch `dre-mqtt-defaults` to origin (owner's OK). Not merged into `dre-stable`; CI only
+  runs on `dre-stable` pushes and PRs into it.
