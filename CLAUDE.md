@@ -56,6 +56,20 @@ Build those in Linux/CI or in Docker. Tested 2026-11-17: all three of v3, v4, ws
 - On a non-private broker, packets from other nodes are only uplinked if the sender has "OK to MQTT" on
   (firmware default off).
 
+## Before you open a PR
+
+These checks are inherited from Meshtastic. Keep them on and fix what they flag; do not disable them.
+
+1. Branch from `dre-stable` (Meshtastic stable), never from Meshtastic `develop`. On 2026-11-17 a V3 build
+   from `develop` (2.8.3) failed with `IncompatiblePlatform: ... depends on PlatformIO Core >=6.2.0`.
+2. Run `trunk fmt` then `trunk check` (Trunk Check workflow). It fails on unformatted files and new lint
+   issues, including Markdown (prettier, markdownlint: tables need blank lines around them, consistent column style).
+3. Add at least one label to the PR (Check PR Labels workflow): `bugfix`, `enhancement`, `hardware-support`,
+   `dependencies`, `submodules`, `github_actions`, `trunk` or `cleanup`.
+4. Build the env you changed locally (see Builds) before pushing; CI builds every DRE env.
+
+Checks that must pass on a PR: DRE-Comm Firmware (build), Pull Request (Trunk Check), Check PR Labels, Semgrep.
+
 ## Rules
 
 - Ask before pushing, force-pushing, creating repos or deleting branches. Commit locally in small commits.
@@ -69,3 +83,5 @@ Build those in Linux/CI or in Docker. Tested 2026-11-17: all three of v3, v4, ws
   contains the DRE hostname, root and username.
 - 2026-11-18: Pushed branch `dre-mqtt-defaults` to origin (owner's OK). Not merged into `dre-stable`; CI only
   runs on `dre-stable` pushes and PRs into it.
+- 2026-11-18: PR #4 merged into `dre-stable` (CI green, 14:42 UTC). Reviewed all earlier CI failure emails
+  (labels, trunk fmt, PlatformIO on `develop`); all were fixed at the source. Added "Before you open a PR".
