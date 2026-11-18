@@ -1,3 +1,18 @@
+# DRE-Comm Firmware
+
+DRE-Comm is Digital Reign Enterprises' build of [Meshtastic®](https://meshtastic.org) firmware for DRE-Comm radios.
+It stays mesh-compatible with stock Meshtastic nodes. Source is provided under the GPLv3, the same license as upstream.
+
+- DRE-Comm builds (one per supported board):
+  `dre-comm-heltec-v3`, `dre-comm-heltec-wireless-tracker` (V1.1), `dre-comm-heltec-wireless-tracker-v2`,
+  `dre-comm-heltec-wsl-v3` (Wireless Stick Lite V3), `dre-comm-heltec-wireless-stick-v3` (Wireless Stick V3/V3.1 with OLED), `dre-comm-t-deck` (classic screens), `dre-comm-t-deck-tft` (touchscreen UI)
+- Build one: `pio run -e dre-comm-heltec-v3`
+- Change the boot logo: `python branding/dre-comm/make_logo.py --image your_logo.png`
+
+Meshtastic® is a registered trademark of Meshtastic LLC. DRE-Comm is not affiliated with or endorsed by Meshtastic LLC.
+
+---
+
 <div align="center" markdown="1">
 
 <img src=".github/meshtastic_logo.png" alt="Meshtastic Logo" width="80"/>

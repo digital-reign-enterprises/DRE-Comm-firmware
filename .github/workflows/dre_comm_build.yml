@@ -1,0 +1,70 @@
+name: DRE-Comm Firmware
+
+# Builds DRE-Comm firmware on pull requests, every push to dre-stable and manual runs.
+# Push a tag like dre-v2.8.3 to also publish the files as a GitHub Release
+# (that release is what the DRE-Comm web flasher will download from).
+# Uses the same build action as Meshtastic's own CI.
+on:
+  push:
+    branches: [dre-stable]
+    tags: [dre-v*]
+  pull_request:
+    branches: [dre-stable]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - board: dre-comm-heltec-v3
+            platform: esp32s3
+          - board: dre-comm-heltec-wireless-tracker
+            platform: esp32s3
+          - board: dre-comm-heltec-wireless-tracker-v2
+            platform: esp32s3
+          - board: dre-comm-heltec-wsl-v3
+            platform: esp32s3
+          - board: dre-comm-heltec-wireless-stick-v3
+            platform: esp32s3
+          - board: dre-comm-t-deck
+            platform: esp32s3
+          - board: dre-comm-t-deck-tft
+            platform: esp32s3
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Build ${{ matrix.board }}
+        uses: meshtastic/gh-action-firmware@main
+        with:
+          pio_platform: ${{ matrix.platform }}
+          pio_env: ${{ matrix.board }}
+          pio_target: build
+
+      - name: Add Meshtastic unified OTA image
+        working-directory: release
+        env:
+          PIO_PLATFORM: ${{ matrix.platform }}
+        run: |
+          curl -fL -o "mt-$PIO_PLATFORM-ota.bin" \
+            "https://github.com/meshtastic/esp32-unified-ota/releases/latest/download/mt-$PIO_PLATFORM-ota.bin"
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.board }}
+          path: release/*
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/dre-v')
+        uses: softprops/action-gh-release@v3
+        with:
+          name: DRE-Comm ${{ github.ref_name }}
+          files: release/*
