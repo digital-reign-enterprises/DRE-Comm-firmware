@@ -6,3 +6,7 @@
 #include "dre_comm_logo.h"
 #define USERPREFS_OEM_TEXT "" // wordmark is in the bitmap; keep high-res screens from drawing it twice
 #define USERPREFS_OEM_FONT_SIZE 1
+
+// DRE-Comm network defaults (MQTT server, topic root, TLS) ride along with the branding,
+// since every DRE-Comm variant.h already includes this file.
+#include "dre_comm_defaults.h"
