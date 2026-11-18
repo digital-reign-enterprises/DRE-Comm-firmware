@@ -1,7 +1,7 @@
 name: DRE-Comm Firmware
 
 # Builds DRE-Comm firmware on pull requests, every push to dre-stable and manual runs.
-# Push a tag like dre-v2.8.3 to also publish the files as a GitHub Release
+# Push a tag like dre-v2.7.26-1 to also publish the files as a GitHub Release
 # (that release is what the DRE-Comm web flasher will download from).
 # Uses the same build action as Meshtastic's own CI.
 on:
@@ -24,6 +24,8 @@ jobs:
         include:
           - board: dre-comm-heltec-v3
             platform: esp32s3
+          - board: dre-comm-heltec-v4
+            platform: esp32s3
           - board: dre-comm-heltec-wireless-tracker
             platform: esp32s3
           - board: dre-comm-heltec-wireless-tracker-v2
@@ -40,6 +42,22 @@ jobs:
       - uses: actions/checkout@v7
         with:
           submodules: recursive
+
+      # The shared public broker password is kept out of the repo. If the secret is set, bake it in;
+      # if not, the build still succeeds but devices can't log in to the DRE-Comm broker.
+      - name: Write DRE-Comm broker credentials
+        env:
+          DRE_MQTT_PUBLIC_PASSWORD: ${{ secrets.DRE_MQTT_PUBLIC_PASSWORD }}
+        run: |
+          if [ -n "$DRE_MQTT_PUBLIC_PASSWORD" ]; then
+            {
+              echo '#pragma once'
+              echo "#define DRE_COMM_MQTT_PASSWORD \"$DRE_MQTT_PUBLIC_PASSWORD\""
+            } > branding/dre-comm/dre_comm_secrets.h
+            echo "DRE-Comm broker password set from secret"
+          else
+            echo "::warning::DRE_MQTT_PUBLIC_PASSWORD secret not set; firmware will not log in to the DRE-Comm broker"
+          fi
 
       - name: Build ${{ matrix.board }}
         uses: meshtastic/gh-action-firmware@main
