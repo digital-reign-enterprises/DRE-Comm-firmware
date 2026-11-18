@@ -4,10 +4,13 @@ DRE-Comm is Digital Reign Enterprises' build of [Meshtastic®](https://meshtasti
 It stays mesh-compatible with stock Meshtastic nodes. Source is provided under the GPLv3, the same license as upstream.
 
 - DRE-Comm builds (one per supported board):
-  `dre-comm-heltec-v3`, `dre-comm-heltec-wireless-tracker` (V1.1), `dre-comm-heltec-wireless-tracker-v2`,
+  `dre-comm-heltec-v3`, `dre-comm-heltec-v4`, `dre-comm-heltec-wireless-tracker` (V1.1), `dre-comm-heltec-wireless-tracker-v2`,
   `dre-comm-heltec-wsl-v3` (Wireless Stick Lite V3), `dre-comm-heltec-wireless-stick-v3` (Wireless Stick V3/V3.1 with OLED), `dre-comm-t-deck` (classic screens), `dre-comm-t-deck-tft` (touchscreen UI)
 - Build one: `pio run -e dre-comm-heltec-v3`
 - Change the boot logo: `python branding/dre-comm/make_logo.py --image your_logo.png`
+- Every DRE-Comm build ships pointed at the DRE-Comm MQTT network (settings in `branding/dre-comm/dre_comm_defaults.h`).
+  MQTT uplink and map reporting stay off until the owner turns them on, as in stock Meshtastic.
+- Based on Meshtastic **stable** releases only. Plan: [ROADMAP.md](ROADMAP.md). Syncing with upstream: [dre/SYNC.md](dre/SYNC.md).
 
 Meshtastic® is a registered trademark of Meshtastic LLC. DRE-Comm is not affiliated with or endorsed by Meshtastic LLC.
 
