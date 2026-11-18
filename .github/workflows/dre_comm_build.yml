@@ -24,6 +24,16 @@ jobs:
         include:
           - board: dre-comm-heltec-v3
             platform: esp32s3
+          - board: dre-comm-heltec-wireless-tracker
+            platform: esp32s3
+          - board: dre-comm-heltec-wireless-tracker-v2
+            platform: esp32s3
+          - board: dre-comm-heltec-wsl-v3
+            platform: esp32s3
+          - board: dre-comm-t-deck
+            platform: esp32s3
+          - board: dre-comm-t-deck-tft
+            platform: esp32s3
     steps:
       - uses: actions/checkout@v7
         with:
