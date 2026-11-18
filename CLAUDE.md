@@ -40,7 +40,8 @@ C:\Users\Gamer\.platformio\penv\Scripts\pio.exe run -e dre-comm-heltec-v3
 Output: `.pio\build\<env>\firmware-<env>-<version>.factory.bin` (full flash at 0x0) and `.bin` (update).
 Known: on Windows, `dre-comm-heltec-v4` and `dre-comm-heltec-wsl-v3` fail with
 `xtensa-esp32s3-elf-g++: error: CreateProcess: No such file or directory` (Windows command-line limit).
-Build those in Linux/CI or in Docker (see the 2026-11-17 entry below).
+Build those in Linux/CI or in Docker. Tested 2026-11-17: all three of v3, v4, wsl-v3 build in a
+`python:3.12-slim` container with `pip install platformio` and `pio run -e <env>`.
 
 ## Important behaviour
 - `USERPREFS_*` defaults apply only on a fresh install / factory reset. Ship new units with a full erase + factory.bin.
@@ -55,4 +56,5 @@ Build those in Linux/CI or in Docker (see the 2026-11-17 entry below).
 ## Log
 - 2026-11-17: Added `dre_comm_defaults.h` (DRE MQTT defaults), `dre-comm-heltec-v4` env, CI secret step,
   WSL V3 now gets the defaults, ROADMAP.md, dre/SYNC.md, this file. Branch `dre-mqtt-defaults` (local only,
-  not pushed). Heltec V3 built OK on Windows.
+  not pushed). Heltec V3 built OK on Windows; V3, V4 and WSL V3 built OK in a Linux container, each binary
+  contains the DRE hostname, root and username.
